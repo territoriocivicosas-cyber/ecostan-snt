@@ -2,11 +2,15 @@ const express = require('express');
 const { Pool } = require('pg');
 const cors = require('cors');
 const nodemailer = require('nodemailer');
+const path = require('path'); // Importante para manejar rutas de archivos
 
 const app = express();
 app.use(express.json());
 app.use(cors());
 app.use(express.urlencoded({ extended: true }));
+
+// Configurar la carpeta actual para servir archivos estáticos (HTML, CSS, JS del front-end)
+app.use(express.static(__dirname));
 
 // Configuración de la conexión a PostgreSQL
 const pool = new Pool({
@@ -18,13 +22,17 @@ const pool = new Pool({
 });
 
 // Configuración del servicio de correo (Nodemailer)
-// ⚠️ RECUERDA: Reemplaza 'tucorreo@gmail.com' y 'tu_contraseña_de_aplicacion' con tus datos reales de Gmail
 const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
         user: 'tucorreo@gmail.com', 
         pass: 'tu_contraseña_de_aplicacion' 
     }
+});
+
+// Ruta principal para servir tu archivo HTML (Soluciona el error Cannot GET /)
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
 });
 
 // 1. Ruta para Registrar Usuarios y enviar correo de confirmación
@@ -72,7 +80,7 @@ app.get('/api/confirmar', async (req, res) => {
     }
 });
 
-// 3. Ruta para Iniciar Sesión (NUEVA AGREGADA)
+// 3. Ruta para Iniciar Sesión
 app.post('/api/login', async (req, res) => {
     const { email, password } = req.body;
     try {
@@ -126,7 +134,8 @@ app.get('/api/reportes', async (req, res) => {
     }
 });
 
-// Iniciar servidor en el puerto 3000
-app.listen(3000, () => {
-    console.log('Servidor corriendo en http://localhost:3000');
+// Iniciar servidor usando el puerto dinámico de Render (o 3000 por defecto localmente)
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+    console.log(`Servidor corriendo en el puerto ${PORT}`);
 });

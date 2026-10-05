@@ -1,0 +1,8 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "app.vercel.ecostan_snt.twa",
+        "sha256_cert_fingerprints": ["53:F8:50:8A:B1:D1:75:67:3A:73:9E:D9:1D:51:2F:F1:49:EB:BA:BE:08:06:42:76:4A:E7:B6:65:FC:31:A7:37"]
+      }
+    }]

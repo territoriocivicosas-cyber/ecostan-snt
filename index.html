@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ciudad Limpia - Bucaramanga</title>
+    <link rel="stylesheet" href="estilos.css">
+
+    <!-- Estilos y Script del Mapa Leaflet -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <!-- Plugin para agrupar reportes cercanos en burbujas numeradas -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
+    <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+</head>
+
+<body>
+
+    <!-- =========================
+         CONTENIDO PRINCIPAL
+    ========================== -->
+    <main class="main-single">
+
+        <!-- HEADER SUPERIOR -->
+        <header class="topbar-single">
+            <div class="user-profile">
+                <button class="icon-btn" onclick="mostrarSeccion('inicio', this)" title="Perfil / Inicio">
+                    👤
+                </button>
+                <div class="app-title-wrap">
+                    <h1 id="tituloPagina">Ciudad Limpia</h1>
+                    <small>Bucaramanga</small>
+                </div>
+            </div>
+
+            <div class="topbar-actions">
+                <button class="icon-btn" onclick="mostrarSeccion('mis-reportes')" title="Reportes generales">
+                    📢
+                </button>
+                <button class="icon-btn" onclick="mostrarSeccion('crear-reporte')" title="Crear reporte">
+                    ➕
+                </button>
+                <a href="login.html" class="icon-btn" title="Iniciar sesión">
+                    ⚙️
+                </a>
+            </div>
+        </header>
+
+        <!-- =========================
+             INICIO
+        ========================== -->
+        <section id="inicio" class="seccion activa">
+            <!-- Carrusel de banners -->
+            <div class="banner-carousel-wrap">
+                <div class="banner-track" id="bannerTrack"></div>
+                <div class="banner-dots" id="bannerDots"></div>
+            </div>
+
+            <!-- ACCIONES RÁPIDAS (Cuadrícula de opciones) -->
+            <div class="section-title">
+                <div>
+                    <h2>Gestión Ciudadana</h2>
+                    <p>Selecciona una opción para continuar</p>
+                </div>
+            </div>
+
+            <div class="quick-actions-grid">
+                <button class="quick-card" onclick="mostrarSeccion('rutas', this)">
+                    <span class="qc-icon">🚛</span>
+                    <span class="qc-label">Rutas de recolección</span>
+                </button>
+
+                <button class="quick-card" onclick="mostrarSeccion('avisos', this)">
+                    <span class="qc-icon">🔔</span>
+                    <span class="qc-label">Avisos</span>
+                </button>
+
+                <button class="quick-card" onclick="mostrarSeccion('educacion', this)">
+                    <span class="qc-icon">🌱</span>
+                    <span class="qc-label">Educación ambiental</span>
+                </button>
+
+                <button class="quick-card" onclick="mostrarSeccion('crear-reporte', this)">
+                    <span class="qc-icon">📝</span>
+                    <span class="qc-label">Crear Reporte</span>
+                </button>
+            </div>
+
+            <!-- SECCIÓN DESTACADA -->
+            <div class="section-title" style="margin-top: 30px;">
+                <div>
+                    <h2>Acción Ambiental</h2>
+                </div>
+            </div>
+
+            <div class="feature-card-box">
+                <div class="fc-image-wrap">
+                    <div class="fc-placeholder-img">♻️</div>
+                </div>
+                <div class="fc-content">
+                    <h3>Jornada Verde Bucaramanga</h3>
+                    <p>Súmate a las iniciativas locales para la correcta separación de residuos y cuidado de parques.</p>
+                    <button class="primary-btn" onclick="mostrarSeccion('educacion')">Ver más</button>
+                </div>
+            </div>
+
+            <!-- MAPA LEAFLET -->
+            <div class="section-title" style="margin-top: 30px;">
+                <div>
+                    <h2>Situación de la ciudad</h2>
+                    <p>Visualización interactiva con GPS</p>
+                </div>
+            </div>
+
+            <div class="map" id="mapa-container" style="height: 350px; width: 100%; border-radius: 12px; margin-bottom: 30px;"></div>
+        </section>
+
+        <!-- =========================
+             CREAR REPORTE (NUEVO)
+        ========================== -->
+        <section id="crear-reporte" class="seccion">
+            <div class="section-title">
+                <div>
+                    <h2>Crear Nuevo Reporte</h2>
+                    <p>Informa sobre acumulación de basura o escombros.</p>
+                </div>
+                <button class="secondary-btn" onclick="mostrarSeccion('inicio')">← Volver</button>
+            </div>
+
+            <form id="formReporte" onsubmit="enviarReporte(event)" style="background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+                <div style="margin-bottom: 15px;">
+                    <label for="tipoReporte" style="display: block; margin-bottom: 5px; font-weight: bold;">Tipo de Problema:</label>
+                    <select id="tipoReporte" required style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #ccc;">
+                        <option value="Basura acumulada">Basura acumulada</option>
+                        <option value="Escombros en vía pública">Escombros en vía pública</option>
+                        <option value="Falta de recolección">Falta de recolección</option>
+                        <option value="Otro">Otro</option>
+                    </select>
+                </div>
+
+                <div style="margin-bottom: 15px;">
+                    <label for="direccionReporte" style="display: block; margin-bottom: 5px; font-weight: bold;">Dirección o Referencia:</label>
+                    <input type="text" id="direccionReporte" placeholder="Ej: Calle 45 # 20-30, Cabecera" required style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #ccc;">
+                </div>
+
+                <div style="margin-bottom: 15px;">
+                    <label for="descripcionReporte" style="display: block; margin-bottom: 5px; font-weight: bold;">Descripción:</label>
+                    <textarea id="descripcionReporte" rows="4" placeholder="Describe brevemente la situación..." required style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #ccc;"></textarea>
+                </div>
+
+                <button type="submit" class="primary-btn" style="width: 100%; padding: 12px; background: #28a745; color: #fff; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;">Enviar Reporte</button>
+            </form>
+        </section>
+
+        <!-- =========================
+             RUTAS
+        ========================== -->
+        <section id="rutas" class="seccion">
+            <div class="section-title">
+                <div>
+                    <h2>Rutas de recolección</h2>
+                    <p>Consulta información sobre los recorridos.</p>
+                </div>
+                <button class="secondary-btn" onclick="mostrarSeccion('inicio')">← Volver</button>
+            </div>
+
+            <div class="route-search">
+                <input type="text" id="buscarRuta" placeholder="Buscar por barrio o sector...">
+            </div>
+
+            <div id="listaRutas" class="routes">
+                <div class="route">
+                    <div class="route-icon">🚛</div>
+                    <div>
+                        <h3>Cabecera</h3>
+                        <p>Recolección de residuos ordinarios</p>
+                        <strong>Lunes - Miércoles - Viernes</strong>
+                    </div>
+                    <span class="route-status">Programada</span>
+                </div>
+                <div class="route">
+                    <div class="route-icon">🚛</div>
+                    <div>
+                        <h3>Floridablanca</h3>
+                        <p>Recolección de residuos ordinarios</p>
+                        <strong>Martes - Jueves - Sábado</strong>
+                    </div>
+                    <span class="route-status">Programada</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- =========================
+             AVISOS
+        ========================== -->
+        <section id="avisos" class="seccion">
+            <div class="section-title">
+                <div>
+                    <h2>Avisos ciudadanos</h2>
+                    <p>Información importante sobre el servicio.</p>
+                </div>
+                <button class="secondary-btn" onclick="mostrarSeccion('inicio')">← Volver</button>
+            </div>
+
+            <div class="notice" style="background: var(--blanco); padding: 20px; border-radius: var(--radio-card);">
+                <div class="notice-icon">🔔</div>
+                <div>
+                    <span class="notice-date">Información de servicio</span>
+                    <h3>Cambios temporales en rutas</h3>
+                    <p>Modificaciones temporales en los horarios de recolección debido a mantenimiento vial.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- =========================
+             EDUCACIÓN AMBIENTAL
+        ========================== -->
+        <section id="educacion" class="seccion">
+            <div class="section-title">
+                <div>
+                    <h2>Educación ambiental</h2>
+                    <p>Aprende cómo manejar correctamente los residuos.</p>
+                </div>
+                <button class="secondary-btn" onclick="mostrarSeccion('inicio')">← Volver</button>
+            </div>
+
+            <div class="education-grid">
+                <div class="education-card">
+                    <div>♻</div>
+                    <h3>Reciclables</h3>
+                    <p>Separa materiales que puedan ser aprovechados nuevamente (plásticos, cartón, vidrio).</p>
+                </div>
+                <div class="education-card">
+                    <div>🗑</div>
+                    <h3>Residuos ordinarios</h3>
+                    <p>Deposita correctamente los residuos que no pueden ser aprovechados en los horarios establecidos.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- =========================
+             MIS REPORTES
+        ========================== -->
+        <section id="mis-reportes" class="seccion">
+            <div class="section-title">
+                <div>
+                    <h2>Reportes generales</h2>
+                    <p>Problemas informados por la comunidad.</p>
+                </div>
+                <button class="secondary-btn" onclick="mostrarSeccion('inicio')">← Volver</button>
+            </div>
+
+            <div id="listaReportes">
+                <div class="empty">
+                    <div>📋</div>
+                    <h3>No hay reportes registrados todavía</h3>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- NOTIFICACIÓN (TOAST) -->
+    <div id="toast" class="toast">
+        <strong>Notificación</strong>
+        <p>Acción realizada correctamente.</p>
+    </div>
+
+    <!-- Script principal de la aplicación -->
+    <script src="app.js"></script>
+
+</body>
+</html>

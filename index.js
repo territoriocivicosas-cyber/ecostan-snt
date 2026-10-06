@@ -12,14 +12,21 @@ app.use(express.urlencoded({ extended: true }));
 // Configurar la carpeta actual para servir archivos estáticos (HTML, CSS, JS del front-end)
 app.use(express.static(__dirname));
 
-// Configuración de la conexión a PostgreSQL
-const pool = new Pool({
-    user: 'postgres',
-    host: 'localhost',
-    database: 'ciudad_limpia_db',
-    password: 'valemar1831', // Tu contraseña de pgAdmin
-    port: 5432,
-});
+// Configuración de la conexión a PostgreSQL (Compatible con Render y Local)
+const pool = new Pool(
+    process.env.DATABASE_URL
+        ? {
+              connectionString: process.env.DATABASE_URL,
+              ssl: { rejectUnauthorized: false }
+          }
+        : {
+              user: 'postgres',
+              host: 'localhost',
+              database: 'ciudad_limpia_db',
+              password: 'valemar1831', // Tu contraseña de pgAdmin
+              port: 5432,
+          }
+);
 
 // Configuración del servicio de correo (Nodemailer)
 const transporter = nodemailer.createTransport({
@@ -47,7 +54,10 @@ app.post('/api/registro', async (req, res) => {
         `;
         await pool.query(query, [email, password, nombre, token]);
 
-        const linkConfirmacion = `http://localhost:3000/api/confirmar?token=${token}`;
+        // Detecta automáticamente si está en Render o Local para armar el link del correo
+        const baseUrl = `${req.protocol}://${req.get('host')}`;
+        const linkConfirmacion = `${baseUrl}/api/confirmar?token=${token}`;
+
         await transporter.sendMail({
             from: 'tucorreo@gmail.com',
             to: email,
